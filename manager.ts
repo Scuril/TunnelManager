@@ -57,6 +57,20 @@ export class TunnelManager {
     }
   }
 
+  public start(port: number) {
+    if(this.tunnels.has(port)) {
+      const tunnel = this.tunnels.get(port)!
+      return tunnel.connect()
+    }
+  }
+
+  public restart(port: number) {
+    if(this.tunnels.has(port)) {
+      const tunnel = this.tunnels.get(port)!
+      return tunnel.reset()
+    }
+  }
+
   public stop(port: number) {
     if(this.tunnels.has(port)) {
       const tunnel = this.tunnels.get(port)!

@@ -16,6 +16,9 @@ export class Tunnel {
   }
 
   public async connect(): Promise<void> {
+    if (this.status === 'idle') {
+      return
+    }
     this.url = await ngrok.connect({
       proto: 'http', // http|tcp|tls
       addr: this.port, // port
@@ -30,7 +33,7 @@ export class Tunnel {
         }
       }, // 'closed' - connection is lost, 'connected' - reconnected
       onLogEvent: data => {
-        console.log(data)
+        //console.log(data)
       }, // returns stdout messages from ngrok process
     })
   }
@@ -43,7 +46,11 @@ export class Tunnel {
   }
 
   public disconnect(): Promise<void> {
+    if(this.status !== 'connected') {
+      return new Promise<void>((_, r) => r())
+    }
     this.status = 'idle'
+    this.url = ''
     return ngrok.disconnect(this.url)
   }
 }
