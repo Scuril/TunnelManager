@@ -12,8 +12,10 @@ export class TunnelManager {
   private autoconnect: boolean
   private region: Region
 
-  constructor(path: string = 'tunnel.json') {
+  constructor(path: string = 'config.json') {
     this.autoconnect = true
+    this.region = 'eu'
+    this.tunnels = new Map<number, Tunnel>()
     if(fs.existsSync(path) && fs.lstatSync(path).isFile()) {
       const data = fs.readFileSync(path).toString()
 
@@ -39,7 +41,7 @@ export class TunnelManager {
     }
   }
 
-  public async add(port: number, region: Region = this.region, autoconnect: boolean = this.autoconnect): Promise<void> {
+  public async add(port: number, region: Region = this.region, autoconnect: boolean = this.autoconnect) {
     const tunnel = new Tunnel(port, region)
     this.tunnels.set(port, tunnel)
     if (autoconnect) {
@@ -47,25 +49,25 @@ export class TunnelManager {
     }
   }
 
-  public async remove(port: number): Promise<void> {
+  public async remove(port: number) {
     if(this.tunnels.has(port)) {
-      const tunnel = this.tunnels.get(port)
+      const tunnel = this.tunnels.get(port)!
       await tunnel.disconnect()
       this.tunnels.delete(port)
     }
   }
 
-  public stop(port: number): Promise<void> {
+  public stop(port: number) {
     if(this.tunnels.has(port)) {
-      const tunnel = this.tunnels.get(port)
+      const tunnel = this.tunnels.get(port)!
       return tunnel.disconnect()
     }
   }
 
   public list() {
-    return 'Port\tURL\n' + [...this.tunnels.keys()].map(key => {
-      const t = this.tunnels[key]
-      return `:${t.port}\t${t.url}`
-    }).join('\n')
+    return [...this.tunnels.keys()].map(key => {
+      const t = this.tunnels.get(key)!
+      return {port: t.port, url: t.url, status: t.status, region: t.region}
+    })
   }
 }

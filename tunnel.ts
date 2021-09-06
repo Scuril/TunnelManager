@@ -6,12 +6,13 @@ export class Tunnel {
   public readonly port: number
   public readonly region: Region
   public url: string
-  public status: 'closed' | 'connected'
+  public status: 'closed' | 'connected' | 'idle'
 
-  constructor(port, region) {
+  constructor(port: number, region: Region) {
     this.port = port
     this.region = region
-    this.status = 'closed'
+    this.url = ''
+    this.status = 'idle'
   }
 
   public async connect(): Promise<void> {
@@ -25,7 +26,7 @@ export class Tunnel {
           console.log(`Connection :${this.port} was reset ${this.url}`)
         }
         else {
-          console.error(`Connection :${this.port} was unexpectedly closed`)
+          console.warn(`Connection :${this.port} was unexpectedly closed`)
         }
       }, // 'closed' - connection is lost, 'connected' - reconnected
       onLogEvent: data => {
@@ -35,13 +36,14 @@ export class Tunnel {
   }
 
   public async reset(): Promise<void> {
-    if(status !== 'closed') {
+    if(this.status === 'connected') {
       await this.disconnect()
     }
     await this.connect()
   }
 
   public disconnect(): Promise<void> {
+    this.status = 'idle'
     return ngrok.disconnect(this.url)
   }
 }
