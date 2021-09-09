@@ -1,14 +1,14 @@
-import * as ngrok from 'ngrok'
-
 export type Region = 'us' | 'eu' | 'au' | 'ap' | 'sa' | 'jp' | 'in'
 
 export class Tunnel {
+  private readonly ngrok: any
   public readonly port: number
   public readonly region: Region
   public url: string
   public status: 'closed' | 'connected' | 'idle'
 
   constructor(port: number, region: Region) {
+    this.ngrok = require('ngrok')
     this.port = port
     this.region = region
     this.url = ''
@@ -16,25 +16,17 @@ export class Tunnel {
   }
 
   public async connect(): Promise<void> {
-    if (this.status === 'idle') {
+    if (this.status !== 'idle') {
       return
     }
-    this.url = await ngrok.connect({
+    this.url = await this.ngrok.connect({
       proto: 'http', // http|tcp|tls
       addr: this.port, // port
       region: this.region, // (us, eu, au, ap, sa, jp, in)
-      onStatusChange: status => {
+      onStatusChange: (status: 'closed' | 'connected' | 'idle') => {
         this.status = status
-        if(status === 'connected') {
-          console.log(`Connection :${this.port} was reset ${this.url}`)
-        }
-        else {
-          console.warn(`Connection :${this.port} was unexpectedly closed`)
-        }
       }, // 'closed' - connection is lost, 'connected' - reconnected
-      onLogEvent: data => {
-        //console.log(data)
-      }, // returns stdout messages from ngrok process
+      onLogEvent: (data: any) => { }, // returns stdout messages from ngrok process
     })
   }
 
@@ -47,10 +39,10 @@ export class Tunnel {
 
   public disconnect(): Promise<void> {
     if(this.status !== 'connected') {
-      return new Promise<void>((_, r) => r())
+      return new Promise<void>((r) => r())
     }
     this.status = 'idle'
     this.url = ''
-    return ngrok.disconnect(this.url)
+    return this.ngrok.disconnect(this.url)
   }
 }

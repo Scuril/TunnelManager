@@ -5,10 +5,12 @@ import * as inquirer from 'inquirer'
 import { TunnelManager } from './manager'
 
 export class ConsoleTextManager {
+  private readonly basePort: number
   private defaultPort: number
 
   constructor() {
-    this.defaultPort = 3000
+    this.basePort = 3000
+    this.defaultPort = this.basePort
   }
 
   public logo = () => {
@@ -20,10 +22,11 @@ export class ConsoleTextManager {
     )
   }
   
-  public listTunnels = (manager: TunnelManager) => {
+  public listTunnels (manager: TunnelManager) {
     const tunnels = manager.list()
+    tunnels.sort((a, b) => a.port - b.port)
     const format = chalk.blue
-    const tunnelsM = format.bold('Port\t\tStatus\t\tRegion\t\tURL\n') + format(tunnels.map(x => `:${x.port}\t\t${x.status}\t\t${x.region}\t\t${x.url}`))
+    const tunnelsM = format.bold('Port\t\tStatus\t\tRegion\t\tURL') + format(tunnels.map(x => `\n:${x.port}\t\t${x.status}\t\t${x.region}\t\t${x.url}`))
     const notunnelsM = format('There is no tunnels')
   
     this.logo()
@@ -61,10 +64,19 @@ export class ConsoleTextManager {
   }
 
   public async addTunnel(manager: TunnelManager) {
+    const ports = manager.list().map(x => x.port - this.basePort).filter(x => x >= 0)
+    this.defaultPort = this.basePort
+    ports.forEach((x, i) => {
+      this.defaultPort = i + this.basePort
+      if(x !== i) {
+        return
+      }
+      else {
+        this.defaultPort++
+      }
+    })
+
     const port = await this.createTunnelPort()
-    if(port == this.defaultPort) {
-      this.defaultPort++
-    }
     await manager.add(port)
   }
 
@@ -80,6 +92,10 @@ export class ConsoleTextManager {
     await manager.start(port)
   }
 
+  public async restartAllTunnels(manager: TunnelManager) {
+    return manager.restart()
+  }
+
   public async restartTunnel(manager: TunnelManager) {
     const ports = manager.list().map(x => x.port)
     const port = await this.getTunnelPort(ports)
@@ -92,10 +108,15 @@ export class ConsoleTextManager {
     await manager.stop(port)
   }
 
+  public resetTunnels(manager: TunnelManager) {
+    return manager.reset()
+  }
+
   private commands(manager: TunnelManager) {
     let commands = new Map<string, Function>()
-    commands.set('List tunnels', this.listTunnels)
+    commands.set('Refresh tunnels list', () => {})
     commands.set('Add tunnel', this.addTunnel)
+    commands.set('Reset tunnels', this.resetTunnels)
     commands.set('Exit', () => {
       clear()
       process.exit()
@@ -104,8 +125,9 @@ export class ConsoleTextManager {
     const count = manager.list().length
     if(count) {
       commands.set('Remove tunnel', this.removeTunnel)
+      commands.set('Restart all tunnels', this.restartAllTunnels)
       commands.set('Start tunnel', this.startTunnel)
-      commands.set('Restart tunnel', this.startTunnel)
+      commands.set('Restart tunnel', this.restartTunnel)
       commands.set('Stop tunnel', this.stopTunnel)
     }
 
@@ -127,11 +149,11 @@ export class ConsoleTextManager {
   }
 
   public async waitCommand(manager: TunnelManager) {
-    let i = 0
-    let lastCommand
+    let lastCommand: Function | undefined
     while(true) {
-      this.logo()
       await lastCommand?.(manager)
+      this.logo()
+      this.listTunnels(manager)
       const commands = this.commands(manager)
       const cKeys = [...commands.keys()]
       this.listCommands(cKeys)

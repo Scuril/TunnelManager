@@ -1,10 +1,10 @@
 import { ConsoleTextManager } from './console'
 import { TunnelManager } from './manager'
 
-const manager = new TunnelManager()
-const textManager = new ConsoleTextManager()
-
 const main = async () => {
+  const textManager = new ConsoleTextManager()
+  const manager = new TunnelManager('config.json')
+
   await textManager.waitCommand(manager)
 }
 

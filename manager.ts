@@ -8,11 +8,13 @@ type TunnelManagerConfig = {
 }
 
 export class TunnelManager {
+  private readonly confPorts: number[]
   private tunnels: Map<number, Tunnel>
   private autoconnect: boolean
   private region: Region
 
   constructor(path: string = 'config.json') {
+    this.confPorts = []
     this.autoconnect = true
     this.region = 'eu'
     this.tunnels = new Map<number, Tunnel>()
@@ -34,6 +36,7 @@ export class TunnelManager {
         this.region = localConf.region
       }
       if(localConf.tunnels !== undefined) {
+        this.confPorts = localConf.tunnels
         for (let i = 0; i < localConf.tunnels.length; i++) {
           this.add(localConf.tunnels[i])
         }
@@ -64,10 +67,17 @@ export class TunnelManager {
     }
   }
 
-  public restart(port: number) {
-    if(this.tunnels.has(port)) {
-      const tunnel = this.tunnels.get(port)!
-      return tunnel.reset()
+  public restart(port: number | undefined = undefined) {
+    if(port !== undefined) {
+      if(this.tunnels.has(port)) {
+        const tunnel = this.tunnels.get(port)!
+        return tunnel.reset()
+      }
+    }
+    else {
+      return [...this.tunnels.values()].map(x => {
+        return x.disconnect().then(_ => x.connect())
+      })
     }
   }
 
@@ -76,6 +86,13 @@ export class TunnelManager {
       const tunnel = this.tunnels.get(port)!
       return tunnel.disconnect()
     }
+  }
+
+  public reset() {
+    return Promise.all([...this.tunnels.values()].map(x => x.disconnect())).then(_ => {
+      this.tunnels = new Map<number, Tunnel>()
+      this.confPorts.forEach(x => this.add(x))
+    })
   }
 
   public list() {
