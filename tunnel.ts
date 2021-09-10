@@ -2,17 +2,19 @@ export type Region = 'us' | 'eu' | 'au' | 'ap' | 'sa' | 'jp' | 'in'
 
 export class Tunnel {
   private readonly ngrok: any
+  public readonly authtoken: string
   public readonly port: number
   public readonly region: Region
   public url: string
   public status: 'closed' | 'connected' | 'idle'
 
-  constructor(port: number, region: Region) {
+  constructor(port: number, region: Region, authtoken: string) {
     this.ngrok = require('ngrok')
     this.port = port
     this.region = region
     this.url = ''
     this.status = 'idle'
+    this.authtoken = authtoken
   }
 
   public async connect(): Promise<void> {
@@ -20,6 +22,7 @@ export class Tunnel {
       return
     }
     this.url = await this.ngrok.connect({
+      authtoken: this.authtoken,
       proto: 'http', // http|tcp|tls
       addr: this.port, // port
       region: this.region, // (us, eu, au, ap, sa, jp, in)

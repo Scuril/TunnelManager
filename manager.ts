@@ -4,11 +4,13 @@ import * as fs from 'fs'
 type TunnelManagerConfig = {
   tunnels: number[] | undefined,
   autoconnect: boolean | undefined,
+  authtoken: string | undefined
   region: Region | undefined
 }
 
 export class TunnelManager {
   private readonly confPorts: number[]
+  private readonly authtoken: string
   private tunnels: Map<number, Tunnel>
   private autoconnect: boolean
   private region: Region
@@ -17,6 +19,7 @@ export class TunnelManager {
     this.confPorts = []
     this.autoconnect = true
     this.region = 'eu'
+    this.authtoken = ''
     this.tunnels = new Map<number, Tunnel>()
     if(fs.existsSync(path) && fs.lstatSync(path).isFile()) {
       const data = fs.readFileSync(path).toString()
@@ -35,6 +38,9 @@ export class TunnelManager {
       if(localConf.region !== undefined) {
         this.region = localConf.region
       }
+      if(localConf.authtoken !== undefined) {
+        this.authtoken= localConf.authtoken
+      }
       if(localConf.tunnels !== undefined) {
         this.confPorts = localConf.tunnels
         for (let i = 0; i < localConf.tunnels.length; i++) {
@@ -45,7 +51,7 @@ export class TunnelManager {
   }
 
   public async add(port: number, region: Region = this.region, autoconnect: boolean = this.autoconnect) {
-    const tunnel = new Tunnel(port, region)
+    const tunnel = new Tunnel(port, region, this.authtoken)
     this.tunnels.set(port, tunnel)
     if (autoconnect) {
       await tunnel.connect()
