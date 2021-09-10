@@ -43,6 +43,6 @@ export class Tunnel {
     }
     this.status = 'idle'
     this.url = ''
-    return this.ngrok.disconnect(this.url)
+    return this.ngrok.kill()
   }
 }
