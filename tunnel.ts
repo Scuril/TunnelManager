@@ -23,7 +23,7 @@ export class Tunnel {
   public reset(): Promise<void> {
     return this.disconnect().then(_ => this.connect())
   }
-  public disconnect(): Promise<void> {
+  public async disconnect(): Promise<void> {
     throw new Error("Not Implement Exception")
   }
 }

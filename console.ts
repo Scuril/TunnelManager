@@ -26,7 +26,8 @@ export class ConsoleTextManager {
     const tunnels = manager.list()
     tunnels.sort((a, b) => a.port - b.port)
     const format = chalk.blue
-    const tunnelsM = format.bold('Port\t\tStatus\t\tURL') + format(tunnels.map(x => `\n:${x.port}\t\t${x.status}\t\t${x.url}`).join(''))
+    const tunnelsM = format.bold('Port'.padEnd(6, '\t') + 'Status'.padEnd(9, '\t') + 'URL') + 
+      format(tunnels.map(x => `\n:${x.port.toString().padEnd(6, '\t')}${x.status.padEnd(9, '\t')}\t\t${x.url}`).join(''))
     const notunnelsM = format('There is no tunnels')
   
     this.logo()
@@ -112,15 +113,21 @@ export class ConsoleTextManager {
     return manager.reset()
   }
 
+  public async Exit(manager: TunnelManager) {
+    const tunnels = manager.list()
+    await Promise.all(tunnels.map(x => {
+      return manager.stop(x.port)
+    }))
+    clear()
+    process.exit()
+  }
+
   private commands(manager: TunnelManager) {
     let commands = new Map<string, Function>()
     commands.set('Refresh tunnels list', () => {})
     commands.set('Add tunnel', this.addTunnel)
     commands.set('Reset tunnels', this.resetTunnels)
-    commands.set('Exit', () => {
-      clear()
-      process.exit()
-    })
+    commands.set('Exit', this.Exit)
 
     const count = manager.list().length
     if(count) {

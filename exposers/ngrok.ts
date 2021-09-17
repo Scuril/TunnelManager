@@ -1,5 +1,5 @@
-import { ngrokRegions } from './conf'
-import { Tunnel } from './tunnel'
+import { ngrokRegions } from '../conf'
+import { Tunnel } from '../tunnel'
 
 export class NgrokTunnel extends Tunnel {
   private readonly ngrok: any
@@ -25,9 +25,10 @@ export class NgrokTunnel extends Tunnel {
       onLogEvent: (data: any) => { }
     })
   }
-  public disconnect(): Promise<void> {
+  
+  public async disconnect(): Promise<void> {
     this.setStatus('idle')
     this.url = ''
-    return this.ngrok.kill()
+    return await this.ngrok.kill()
   }
 }

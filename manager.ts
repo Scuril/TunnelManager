@@ -1,7 +1,7 @@
 import { configAsModule, configStruct } from "./conf"
 import { Tunnel } from "./tunnel"
-import * as fs from 'fs'
-import { NgrokTunnel } from "./ngrok"
+import { NgrokTunnel } from "./exposers/ngrok"
+import { LocalTunnel } from "./exposers/localtunnel"
 
 export class TunnelManager {
   private readonly conf: configStruct
@@ -14,6 +14,9 @@ export class TunnelManager {
     this.TunnelType = NgrokTunnel
     if(this.conf.exposer === 'ngrok') {
       this.TunnelType = NgrokTunnel
+    }
+    else if(this.conf.exposer === 'localtunnel') {
+      this.TunnelType = LocalTunnel
     }
 
     this.conf.tunnels.forEach(x => {
