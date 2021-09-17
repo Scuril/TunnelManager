@@ -26,7 +26,7 @@ export class ConsoleTextManager {
     const tunnels = manager.list()
     tunnels.sort((a, b) => a.port - b.port)
     const format = chalk.blue
-    const tunnelsM = format.bold('Port\t\tStatus\t\tRegion\t\tURL') + format(tunnels.map(x => `\n:${x.port}\t\t${x.status}\t\t${x.region}\t\t${x.url}`))
+    const tunnelsM = format.bold('Port\t\tStatus\t\tURL') + format(tunnels.map(x => `\n:${x.port}\t\t${x.status}\t\t${x.url}`).join(''))
     const notunnelsM = format('There is no tunnels')
   
     this.logo()
