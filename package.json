@@ -1,0 +1,31 @@
+{
+  "name": "tunnelmanager",
+  "version": "1.0.0",
+  "description": "Expose local sites to internet by exposers",
+  "main": "index.ts",
+  "dependencies": {
+    "axios": "^0.21.4",
+    "chalk": "^4.1.2",
+    "clear": "^0.1.0",
+    "dotenv": "^10.0.0",
+    "figlet": "^1.5.2",
+    "inquirer": "^8.1.2",
+    "localtunnel": "^2.0.1",
+    "ngrok": "^4.2.2",
+    "typescript": "^4.4.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Scuril/TunnelManager.git"
+  },
+  "author": "Scuritel",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/Scuril/TunnelManager/issues"
+  },
+  "homepage": "https://github.com/Scuril/TunnelManager#readme"
+}
