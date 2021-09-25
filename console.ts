@@ -45,7 +45,7 @@ export class ConsoleTextManager {
         type: 'input',
         message: 'Enter port',
         default: this.defaultPort,
-        validate: (val) => {
+        validate: (val: string) => {
           return !isNaN(parseInt(val)) ? true : 'Please enter valid port'
         }
       }
@@ -169,7 +169,7 @@ export class ConsoleTextManager {
           name: 'command',
           type: 'input',
           message: 'Enter command index or name',
-          validate: (val) => {
+          validate: (val: string) => {
             const isValidIndex = !isNaN(parseInt(val)) && +val < cKeys.length
             const isValidCommand = cKeys.includes(val)
             return isValidCommand || isValidIndex ? true : 'Please enter valid command name or index'

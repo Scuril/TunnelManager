@@ -1,7 +1,10 @@
 import { configPath, configAsModule, configStruct, defaultConfig } from './conf'
 import { ConsoleTextManager } from './console'
 import { TunnelManager } from './manager'
+import { Command } from 'commander'
 import * as fs from 'fs'
+
+const delay = (ms: number) => new Promise((res, rej) => setTimeout(res, ms))
 
 const checkConfig = () => {
   if(fs.existsSync(configPath) && fs.lstatSync(configPath).isFile()) {
@@ -19,11 +22,35 @@ const checkConfig = () => {
 }
 
 const main = async () => {
+  const args = process.argv
+  
   checkConfig()
-  const textManager = new ConsoleTextManager()
   const manager = new TunnelManager()
 
-  await textManager.waitCommand(manager)
+  const program = new Command()
+  program
+    .option('-s, --silent', 'Run program with config')
+  program.parse(args)
+
+  const options = program.opts()
+  if(options.silent) {
+    const conf: configStruct = require(configAsModule)
+    if(!conf.autoconnect) {
+      await Promise.all(conf.tunnels.map(x => {
+        return manager.start(x)
+      }))
+      manager.list().forEach(x => {
+        console.log(`:${x.port} - ${x.url}`)
+      })
+      while(true) {
+        await delay(100)
+      }
+    }
+  }
+  else {
+    const textManager = new ConsoleTextManager()
+    await textManager.waitCommand(manager)
+  }
 }
 
 main()
